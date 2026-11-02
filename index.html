@@ -1,0 +1,159 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WellTrack Cloud</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #f5f7fb;
+      color: #203d48;
+      font-family: Arial, sans-serif;
+    }
+    main {
+      max-width: 550px;
+      margin: 45px auto;
+      padding: 20px;
+    }
+    h1 { color: #327e72; margin-bottom: 8px; }
+    .subtitle { color: #637783; margin-bottom: 25px; }
+    form {
+      background: white;
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 5px 24px #172c4012;
+    }
+    label {
+      display: block;
+      margin: 17px 0 7px;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccd7dd;
+      border-radius: 8px;
+      font: inherit;
+    }
+    button {
+      width: 100%;
+      margin-top: 24px;
+      padding: 14px;
+      border: none;
+      border-radius: 8px;
+      background: #327e72;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .6; cursor: wait; }
+    #message { margin-top: 18px; font-weight: bold; }
+    .notice { font-size: 13px; color: #637783; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>♡ WellTrack Cloud</h1>
+    <p class="subtitle">
+      Your daily wellness check-in, powered by AWS.
+    </p>
+    <p class="notice">
+      Portfolio demonstration. Use fictional data only.
+    </p>
+
+    <form id="checkinForm">
+      <label for="name">Name</label>
+      <input id="name" maxlength="40" required>
+
+      <label for="mood">How are you feeling?</label>
+      <select id="mood" required>
+        <option value="">Select a mood</option>
+        <option>Great</option>
+        <option>Good</option>
+        <option>Okay</option>
+        <option>Low</option>
+      </select>
+
+      <label for="water">Glasses of water</label>
+      <input id="water" type="number"
+             min="0" max="30" value="6" required>
+
+      <label for="steps">Steps today</label>
+      <input id="steps" type="number"
+             min="0" max="100000" value="7500" required>
+
+      <label for="sleep">Hours of sleep</label>
+      <input id="sleep" type="number"
+             min="0" max="24" step="0.1"
+             value="7.5" required>
+
+      <label for="notes">Notes (optional)</label>
+      <textarea id="notes" maxlength="300"
+                rows="3"></textarea>
+
+      <button id="saveButton" type="submit">
+        Save today's check-in
+      </button>
+      <p id="message" role="status"></p>
+    </form>
+  </main>
+
+  <script>
+    // Replace this URL with your API Gateway endpoint.
+    const API_URL =
+  "https://hop3n0jnih.execute-api.us-east-1.amazonaws.com/checkin";
+
+    const form = document.getElementById("checkinForm");
+    const message = document.getElementById("message");
+    const button = document.getElementById("saveButton");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      button.disabled = true;
+      message.textContent = "Saving...";
+
+      const data = {
+        name: document.getElementById("name").value,
+        mood: document.getElementById("mood").value,
+        waterGlasses: Number(
+          document.getElementById("water").value
+        ),
+        steps: Number(
+          document.getElementById("steps").value
+        ),
+        sleepHours: Number(
+          document.getElementById("sleep").value
+        ),
+        notes: document.getElementById("notes").value
+      };
+
+      try {
+        const response = await fetch(API_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Request failed");
+        }
+
+        message.textContent = "✓ Check-in saved!";
+        form.reset();
+      } catch (error) {
+        message.textContent = "Error: " + error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
